@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="static/main.css">
+</head>
+<body>
+<h2>Calories Calculation Form</h2>
+<p>Fill in the form and click the button to know how many calories you need!</p>
+<form action="/scrap_form" method="post">
+    <p>1) {{beaultifulsoup}} ou abreviado {{bs}}</p>
+    <p>2) {{extractor}} ou abreviado {{ext}}</p>
+    <p>3) {{scrapy}} ou abreviado {{scr}}</p>
+    {{scrapform.tipo.label}} {{scrapform.tipo}}
+    <br>
+    {{scrapform.button}}
+    <br>
+    {% if noticias %}
+    <h3>
+        {% for noticia in noticias %}
+        {{ noticia.get() }}
+        <br>
+        {% endfor %}
+    </h3>
+    {% endif %}
+</form>
+</body>
+</html>

@@ -1,0 +1,20 @@
+noticias:
+    css: div.destaque-nivel-3-content ul.sidebar__lista
+    xpath: null
+    type: Text
+    children:
+        datas:
+            css: div.sidebar--agenda__data
+            xpath: null
+            multiple: true
+            type: Text
+        textos:
+            css: 'div.sidebar--agenda__evento a'
+            xpath: null
+            multiple: true
+            type: Text
+        links:
+            css: 'div.sidebar--agenda__evento a'
+            xpath: null
+            multiple: true
+            type: Link

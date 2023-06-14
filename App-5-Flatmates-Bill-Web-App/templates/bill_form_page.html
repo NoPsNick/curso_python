@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="static/main.css">
+</head>
+<body>
+<h2>Formulário da conta</h2>
+<p>Coloque os resultados e clique para enviar.</p>
+<form action="{{url_for('bill_form_page')}}" method="post">
+    {{billform.amount.label}} {{billform.amount}}
+    <br>
+    {{billform.period.label}} {{billform.period}}
+    <hr>
+    <p>First Flatmate</p>
+    {{billform.name1.label}} {{billform.name1}}
+    <br>
+    {{billform.days_in_house1.label}} {{billform.days_in_house1}}
+    <hr>
+    <p>Second Flatmate</p>
+    {{billform.name2.label}} {{billform.name2}}
+    <br>
+    {{billform.days_in_house2.label}} {{billform.days_in_house2}}
+    <br>
+    {{billform.button}}
+    <br>
+    {% if result %}
+    {{name1}} pays {{amount1}}
+    <br>
+    {{name2}} pays {{amount2}}
+    {% endif %}
+</form>
+</body>
+</html>
