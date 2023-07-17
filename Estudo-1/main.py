@@ -1,4 +1,4 @@
-from typing import Any
+import math
 
 from datetime import datetime
 
@@ -52,7 +52,7 @@ class Leitura:
         linhas = self.ler()
         dat = linhas[3]
         lista = []
-        marcador = 75
+        marcador = 74
         while 1:
             hor = linhas[marcador]
             marcador += 1
@@ -72,7 +72,7 @@ class Leitura:
             marcador += 1
             esc_cinza = linhas[marcador]
             lista.append(Dados(dat, hor, usu, pag, cop, imp, arq, est, dup, esc_cinza))
-            if (marcador+11) >= len(linhas):
+            if (marcador + 11) >= len(linhas):
                 break
             else:
                 marcador += 3
@@ -85,13 +85,11 @@ class Backup:
     def __init__(self, nome_do_arquivo):
         self.nome_do_arquivo = nome_do_arquivo.replace('.csv', '')
 
-    def gerar_csv(self, listdados=None):
+    def gerar_csv(self, listdados: list):
         if listdados is None:
             return False
-        csv = open(f".\\impressoes\\{self.nome_do_arquivo}.csv", "w")
-        csv.close()
-        data = datetime.now().strftime('%d/%m/%Y')
-        with open(f".\\impressoes\\{self.nome_do_arquivo}.csv", "w") as csv:
+        data = self.criar_arquiv_e_pegar_a_data_atual("csv")
+        with open(f".\\impressoes\\{self.nome_do_arquivo}.csv", "a") as csv:
             csv.write(f"Relatório feito na data: {data}\n")
             csv.write("Data, Horário, Usuário, Páginas, Cópias, Impressora, Arquivo, Tipo, Tamanho, Tipo de Impressão,"
                       " Estação, Duplex,Escala de Cinza\n")
@@ -102,7 +100,35 @@ class Backup:
             csv.close()
         return True
 
+    def criar_arquiv_e_pegar_a_data_atual(self, tipo):
+        if tipo == 'csv':
+            csv = open(f".\\impressoes\\{self.nome_do_arquivo}.csv", "w")
+            csv.close()
+        elif tipo == 'total':
+            csv = open(f".\\impressoes\\{self.nome_do_arquivo}_total.csv", "w")
+            csv.close()
+        data = datetime.now().strftime('%d/%m/%Y')
+        return data
+
+    def gerar_total(self, listdados: list):
+        data = self.criar_arquiv_e_pegar_a_data_atual('total')
+        total = {}
+        for num, pessoa in enumerate(listdados):
+            if num == 0:
+                total[pessoa.usu] = 0
+            if pessoa.dup == "No":
+                total[pessoa.usu] += int(pessoa.pag) * int(pessoa.cop)
+            else:
+                total[pessoa.usu] += math.ceil(int(pessoa.pag) / 2) * int(pessoa.cop)
+        with open(f".\\impressoes\\{self.nome_do_arquivo}_total.csv", "w") as csv:
+            csv.write(f"Relatório total feito na data: {data}\n")
+            csv.write(f"Pessoa, Total")
+            for pessoa in total:
+                csv.write(f"{pessoa}, {total[pessoa]}")
+            csv.close
+
 
 dado = Leitura(str(input("Local do arquivo para leitura: "))).criar()
 impre = Backup(str(input("Nome do arquivo para salvar: ")))
 impre.gerar_csv(dado)
+impre.gerar_total(dado)
