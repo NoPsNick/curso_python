@@ -1,12 +1,17 @@
 import requests
-from bs4 import BeautifulSoup
-import json
 
 
 class Scrap:
+    """ Pega o conteúdo do link https://nwdb.info/server-status/servers_24h.json
+    e o transforma em dicionário do python para poder devolver
+    as informações pedidas.
+    Possiveis entradas: eu-central, us-east, us-west, sa-east,
+    ap-southeast e all para todos podendo colocar eles separados por vírgula",".
+    Exemplo: "sa-east, us-east"
+    """
 
     def __init__(self, tipo):
-        self.tipo = tipo.lower()
+        self.tipo = tipo.lower().replace(" ", "")
 
     headers = {
         'pragma': 'no-cache',
@@ -19,22 +24,33 @@ class Scrap:
     }
     base_url = 'https://nwdb.info/server-status/servers_24h.json'
 
-    def conteudo(self):
+    def _conteudo(self) -> dict:
         r = requests.get(self.base_url, headers=self.headers)
-        return r
+        dicionario = r.json()
+        return dicionario
+
+    @staticmethod
+    def _remover_numeros(dado):
+        for num in range(10):
+            dado = dado.replace(f"-{num}", "")
+        return dado
 
     def extrair(self):
-        soup = BeautifulSoup(self.conteudo().text, 'html.parser')
-        dicionario = json.loads(soup.get_text())
-        if self.tipo == "sa":
+        texto = ""
+        dicionario = self._conteudo()
+        if self.tipo == "all":
             for servidor in dicionario["data"]['servers']:
-                if servidor[6] == "sa-east-1":
-                    print(f"{servidor[4]} > {servidor[1]}/{servidor[0]}")
-        elif self.tipo == "all":
+                texto += f"{servidor[4]} > {servidor[1]}/{servidor[0]}\n"
+        else:
+            regioes = self.tipo.split(",")
             for servidor in dicionario["data"]['servers']:
-                print(f"{servidor[4]} > {servidor[1]}/{servidor[0]}")
-        return dicionario
+                regiao = self._remover_numeros(servidor[6])
+                if regiao in regioes:
+                    texto += f"{regiao}: {servidor[4]} > {servidor[1]}/{servidor[0]}\n"
+        return texto
 
 
 if __name__ == '__main__':
-    noticias = Scrap("all").extrair()
+    noticias = Scrap("sa-east, us-east").extrair()
+    print(noticias)
+
