@@ -6,12 +6,13 @@ class Scrap:
     e o transforma em dicionário do python para poder devolver
     as informações pedidas.
     Possiveis entradas: eu-central, us-east, us-west, sa-east,
-    ap-southeast e all para todos podendo colocar eles separados por vírgula",".
+    ap-southeast e all para todos podendo colocar eles separados por vírgula","
+    com o espaço trocado por "-".
     Exemplo: "sa-east, us-east"
     """
 
-    def __init__(self, tipo):
-        self.tipo = tipo.lower().replace(" ", "")
+    def __init__(self, regioes):
+        self.regioes = regioes.lower().replace(" ", "")
 
     headers = {
         'pragma': 'no-cache',
@@ -38,19 +39,18 @@ class Scrap:
     def extrair(self):
         texto = ""
         dicionario = self._conteudo()
-        if self.tipo == "all":
+        if self.regioes == "all":
             for servidor in dicionario["data"]['servers']:
-                texto += f"{servidor[4]} > {servidor[1]}/{servidor[0]}\n"
+                texto += f"{self._remover_numeros(servidor[6])}: {servidor[4]} > {servidor[1]}/{servidor[0]}\n"
         else:
-            regioes = self.tipo.split(",")
             for servidor in dicionario["data"]['servers']:
                 regiao = self._remover_numeros(servidor[6])
-                if regiao in regioes:
+                if regiao in self.regioes.split(","):
                     texto += f"{regiao}: {servidor[4]} > {servidor[1]}/{servidor[0]}\n"
         return texto
 
 
 if __name__ == '__main__':
-    noticias = Scrap("sa-east, us-east").extrair()
+    noticias = Scrap("all").extrair()
     print(noticias)
 
