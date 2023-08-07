@@ -20,7 +20,7 @@ class Backup:
             elif tipo == 'total':
                 csv = open(f".\\totais\\{nome}_total.csv", "w")
                 csv.close()
-        data = datetime.now().strftime('%d/%m/%Y')
+        data = datetime.now().strftime('%d-%m-%Y')
         return data
 
     def gerar_csv(self):
@@ -32,19 +32,20 @@ class Backup:
         # Para cada arquivo se cria um com o mesmo nome,
         # salvando neles os Dados.
         for dado in self.dicionario.keys():
-            with open(f".\\csvs\\{dado}.csv", "a") as csv:
-                csv.write(f"Relatório feito na data: {data}\n")
-                csv.write("Data, Horário, Usuário, Páginas,"
-                          " Cópias, Impressora, Arquivo,"
-                          " Tipo, Tamanho, Tipo de Impressão,"
-                          " Estação, Duplex,Escala de Cinza\n")
-                for info in self.dicionario[dado]:
-                    csv.write(f"{info.dt}, {info.hor}, "
-                              f"{info.usu}, {info.pag}, "
-                              f"{info.cop}, {info.imp}, "
-                              f"{info.arq}, {info.est}, "
-                              f"{info.dup}, {info.esc_cinza}\n")
-                csv.close()
+            if self.dicionario[dado] is not []:
+                with open(f".\\csvs\\{dado}.csv", "a") as csv:
+                    csv.write(f"Relatório feito na data: {data}\n")
+                    csv.write("Data, Horário, Usuário, Páginas,"
+                              " Cópias, Impressora, Arquivo,"
+                              " Tipo, Tamanho, Tipo de Impressão,"
+                              " Estação, Duplex,Escala de Cinza\n")
+                    for info in self.dicionario[dado]:
+                        csv.write(f"{info.dt}, {info.hor}, "
+                                  f"{info.usu}, {info.pag}, "
+                                  f"{info.cop}, {info.imp}, "
+                                  f"{info.arq}, {info.est}, "
+                                  f"{info.dup}, {info.esc_cinza}\n")
+                    csv.close()
         # Retorna o dicionário principal
         return self.dicionario
 
@@ -58,21 +59,28 @@ class Backup:
         # folhas foram utilizadas por cada.
         totais = {}
         for dado in self.dicionario.keys():
-            total = {}
-            for num, pessoa in enumerate(self.dicionario[dado]):
-                if num == 0:
-                    total[pessoa.usu] = 0
-                if str(pessoa.dup).lower() == "no":
-                    total[pessoa.usu] += int(pessoa.pag) * int(pessoa.cop)
-                else:
-                    total[pessoa.usu] += math.ceil(int(pessoa.pag) / 2) * int(pessoa.cop)
-            with open(f".\\totais\\{dado}_total.csv", "w") as csv:
-                csv.write(f"Relatório total feito na data: {data}\n")
-                csv.write(f"Pessoa, Total\n")
-                for pessoa in total:
-                    csv.write(f"{pessoa}, {total[pessoa]}")
-                    totais[pessoa] = total[pessoa]
-                csv.close
+            if self.dicionario[dado] is not []:
+                total = {}
+                for num, pessoa in enumerate(self.dicionario[dado]):
+                    if num == 0:
+                        total[pessoa.usu] = 0
+                    if str(pessoa.dup).lower() == "no":
+                        total[pessoa.usu] += int(pessoa.pag) * int(pessoa.cop)
+                    else:
+                        total[pessoa.usu] += math.ceil(int(pessoa.pag) / 2) * int(pessoa.cop)
+                with open(f".\\totais\\{dado}_total.csv", "w") as csv:
+                    csv.write(f"Relatório total feito na data: {data}\n")
+                    csv.write(f"Usuário, Total\n")
+                    for pessoa in total:
+                        csv.write(f"{pessoa}, {total[pessoa]}\n")
+                        totais[pessoa] = total[pessoa]
+                    csv.close()
+                with open(f".\\csvs\\total_geral_{data}.csv", "w") as csv:
+                    csv.write(f"Relatório total feito na data: {data}\n")
+                    csv.write(f"Usuário, Total\n")
+                    for pessoa in totais.keys():
+                        csv.write(f"{pessoa}, {totais[pessoa]}\n")
+                    csv.close()
         # Retorna um dicionário contendo o nome do usuario
         # ligado a quantas folhas ele utilizou.
         return totais

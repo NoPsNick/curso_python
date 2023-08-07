@@ -23,7 +23,7 @@ class Leitura:
             for name in files:
                 nome = os.path.join(root, name)
                 with open(nome, "r") as lendo:
-                    # Lendo os arquivos e removendo informações desncessarias
+                    # Lendo os arquivos e removendo as informações desncessarias
                     ls = []
                     for line in lendo.readlines():
                         for remov in self._remover:
@@ -34,6 +34,7 @@ class Leitura:
                         )
                     lendo.close()
                 dados[name] = ls
+        # Retornando as linhas em forma de dicionário, onde a chave é o nome do arquivo.
         return dados
 
     def criar(self):
@@ -42,9 +43,17 @@ class Leitura:
         dicionarios = self._ler()
         for chave in dicionarios.keys():
             lista = []
+            # Pegando a data do relatório
             dat = dicionarios[chave][3]
-            marcador = 74
+            # As informações começam na linha 74 = 71 + 3 que começa.
+            marcador = 71
             while 1:
+                # Cada arquivo possuí 9 informações, onde junto a data cria
+                # um dado e o guarda numa lista. 9 + 2 de cada espaçamento.
+                if (marcador + 11) >= len(dicionarios[chave]):
+                    break
+                else:
+                    marcador += 3
                 hor = dicionarios[chave][marcador]
                 marcador += 1
                 usu = dicionarios[chave][marcador]
@@ -63,9 +72,6 @@ class Leitura:
                 marcador += 1
                 esc_cinza = dicionarios[chave][marcador]
                 lista.append(Dados(dat, hor, usu, pag, cop, imp, arq, est, dup, esc_cinza))
-                if (marcador + 11) >= len(dicionarios[chave]):
-                    break
-                else:
-                    marcador += 3
             dados[chave] = lista
+        # Retorna o dicionário com as informações.
         return dados
