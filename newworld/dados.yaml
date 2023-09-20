@@ -1,9 +1,0 @@
-tudo:
-    css: div.d-flex.flex-column
-    xpath: null
-    type: Text
-    children:
-        servidores:
-            css: 'div.container div.container div.row'
-            xpath: null
-            type: Text

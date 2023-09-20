@@ -75,3 +75,7 @@ class Leitura:
             dados[chave] = lista
         # Retorna o dicionário com as informações.
         return dados
+
+
+teste = Leitura()
+print(teste.criar())

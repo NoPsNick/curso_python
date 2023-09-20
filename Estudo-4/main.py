@@ -1,3 +1,6 @@
+import dao
+
+
 class Professor:
 
     def __init__(self, nome: str, adm: bool, usuario: str, senha: str):
@@ -15,16 +18,24 @@ class Professor:
                              data="agora",
                              usuario=self.usuario,
                              situacao=Diario.situacoes[Diario.Aberto])
-        novo_diario.salvar()
-        return novo_diario
+        lista = [novo_diario]
+        conectar = dao.DAO(tipo=dao.DAO.inserir_diarios, dados_em_lista=lista)
+        if conectar.get():
+            return novo_diario
+        else:
+            return False
 
-    def ver_diarios(self, situacoes=None, datas=None):
-        pass
+    def ver_diarios(self):
+        diarios = dao.DAO(tipo=dao.DAO.diarios_usuario, dados=self.usuario).get()
+        if diarios:
+            return diarios
+        else:
+            return False
 
 
 class Diario:
-    Aberto, Fechado, Removido = "aberto", "fechado", "removido"
-    situacoes = {Aberto: "aberto", Fechado: "fechado", Removido: "removido"}
+    Aberto, Fechado = "aberto", "fechado"
+    situacoes = {Aberto: "aberto", Fechado: "fechado"}
 
     def __init__(self, titulo: str, texto: str, data, usuario: str, situacao: str):
         self.titulo = titulo
@@ -36,12 +47,8 @@ class Diario:
     def __repr__(self):
         return str(self.__dict__)
 
-    def salvar(self):
-        pass
-
     def alterar_situacao(self, situacao):
         self.situacao = self.situacoes[situacao]
-        self.salvar()
         return self
 
     def escrever(self):

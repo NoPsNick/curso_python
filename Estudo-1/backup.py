@@ -65,8 +65,10 @@ class Backup:
                     if num == 0:
                         total[pessoa.usu] = 0
                     if str(pessoa.dup).lower() == "no":
+                        # Total da pessoa = (páginas * cópias) + total antigo
                         total[pessoa.usu] += int(pessoa.pag) * int(pessoa.cop)
                     else:
+                        # Total da pessoa = ((páginas * cópias)/2) + total antigo
                         total[pessoa.usu] += math.ceil(int(pessoa.pag) / 2) * int(pessoa.cop)
                 with open(f".\\totais\\{dado}_total.csv", "w") as csv:
                     csv.write(f"Relatório total feito na data: {data}\n")

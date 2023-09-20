@@ -4,52 +4,77 @@ con = Conexao(mhost="", db="", usr="", pw="")
 
 
 class DAO:
+    professores_todos, professores_nome, professores_usuario = (
+        "professores_todos", "professores_nome", "professores_usuario")
+    diarios_todos, diarios_data, diarios_situacao, diarios_data_e_situacao = (
+        "diarios_todos", "diarios_data", "diarios_situacao", "diarios_data_e_situacao")
+    inserir_professores, inserir_diarios = "inserir_professores", "inserir_diarios"
+    diarios_usuario = "diarios_usuario"
 
-    def __init__(self, professores_pegos=None, diarios_pegos=None):
-        self.professores_pegos = professores_pegos
-        self.diarios_pegos = diarios_pegos
+    tipos = {professores_todos: "professores_todos",
+             professores_nome: "professores_nome",
+             professores_usuario: "professores_usuario",
+             diarios_todos: "diarios_todos",
+             diarios_data: "diarios_data",
+             diarios_situacao: "diarios_situacao",
+             diarios_data_e_situacao: "diarios_data_e_situacao",
+             diarios_usuario: "diarios_usuario",
+             inserir_professores: "inserir_professores",
+             inserir_diarios: "inserir_diarios"}
 
-    @staticmethod
-    def _pegar_sql_por_nome(nomes):
-        if nomes.len() >> 1:
+    def __init__(self, tipo: str, dados: str = None, dados_em_lista: list = None):
+        self.tipo = tipo
+        self.dados = dados
+        self.dados_em_lista = dados_em_lista
+
+    def _pegar_sql_por_nome(self):
+        names = self.dados.replace(" ", "").split(",")
+        if len(names) >> 1:
             sql_base = f"SELECT p.* FROM {Conexao.tabela_professores} " \
                        f"WHERE "
-            names = nomes.replace(" ", "").split(",")
             nms = " OR ".join([f"p.nome = '{nome}'" for nome in names])
             sql = sql_base + nms
         else:
             sql = f"SELECT p.* FROM {Conexao.tabela_professores}"
         return sql
 
-    @staticmethod
-    def _pegar_sql_por_usuario(usuarios):
-        if usuarios.len() >> 1:
+    def _pegar_sql_por_usuario(self):
+        usuarios = self.dados.replace(" ", "").split(",")
+        if len(usuarios) >> 1:
             sql_base = f"SELECT p.* FROM {Conexao.tabela_professores} " \
                        f"WHERE "
-            users = usuarios.replace(" ", "").split(",")
-            nms = " OR ".join([f"p.usuario = '{usuario}'" for usuario in users])
+            nms = " OR ".join([f"p.usuario = '{usuario}'" for usuario in usuarios])
             sql = sql_base + nms
         else:
             sql = f"SELECT p.* FROM {Conexao.tabela_professores}"
         return sql
 
-    @staticmethod
-    def _pegar_sql_por_data(datas):
-        data = datas.replace(" ", "").split(",")
-        if data.len() == 1:
+    def _pegar_sql_diario_por_usuario(self):
+        usuarios = self.dados.replace(" ", "").split(",")
+        if len(usuarios) >> 1:
+            sql_base = f"SELECT p.* FROM {Conexao.tabela_diarios} " \
+                       f"WHERE "
+            nms = " OR ".join([f"p.usuario = '{usuario}'" for usuario in usuarios])
+            sql = sql_base + nms
+        else:
+            sql = f"SELECT p.* FROM {Conexao.tabela_professores}"
+        return sql
+
+    def _pegar_sql_por_data(self):
+        data = self.dados.replace(" ", "").split(",")
+        if len(data) == 1:
             sql = f"SELECT p.* FROM {Conexao.tabela_diarios} " \
                   f"WHERE p.data = '{data[0]}'"
-        elif data.len() == 2:
+        elif len(data) == 2:
             sql = f"SELECT p.* FROM {Conexao.tabela_diarios} " \
                   f"WHERE p.data BETWEEN '{data[0]}' AND '{data[1]}'"
         else:
             sql = f"SELECT p.* from {Conexao.tabela_diarios}"
         return sql
 
-    @staticmethod
-    def _pegar_sql_por_situacao(situacoes):
-        situations = situacoes.replace(" ", "").split(",")
-        if situations.len() >> 1:
+    def _pegar_sql_por_situacao(self):
+        situations = self.dados.replace(" ", "").split(",")
+        if len(situations) >> 1:
             sqlbase = f"select p.* from {Conexao.tabela_diarios} " \
                       f"WHERE "
 
@@ -59,137 +84,160 @@ class DAO:
             sql = f"SELECT p.* from {Conexao.tabela_diarios}"
         return sql
 
-    def pegar_todos_professores(self):
-        sql = f"SELECT p.* FROM {Conexao.tabela_professores}"
-        professorespegos = con.consultar(sql)
-        profs = []
-        try:
-            for linha in professorespegos:
-                profs.append(Professor(linha[0], linha[1], linha[2], linha[3]))
-        except:
-            self.professores_pegos = None
-            return False
+    def get(self) -> list | bool:
+        if self.tipo == self.tipos[self.professores_todos]:
+            sql = f"SELECT p.* FROM {Conexao.tabela_professores}"
+            professorespegos = con.consultar(sql)
+            profs = []
+            try:
+                for linha in professorespegos:
+                    profs.append(Professor(linha[0], linha[1], linha[2], linha[3]))
+            except:
+                return False
+            con.fechar()
+            return profs
 
-        con.fechar()
-        self.professores_pegos = profs
-        return True
+        elif self.tipo == self.tipos[self.professores_nome]:
+            if self.dados:
+                sql = self._pegar_sql_por_nome()
+                professorespegos = con.consultar(sql)
+                profs = []
+                try:
+                    for linha in professorespegos:
+                        profs.append(Professor(linha[0], linha[1], linha[2], linha[3]))
+                except:
+                    return False
 
-    def pegar_professores_por_nome(self, nomes):
-        sql = self._pegar_sql_por_nome(nomes)
-        professorespegos = con.consultar(sql)
-        profs = []
-        try:
-            for linha in professorespegos:
-                profs.append(Professor(linha[0], linha[1], linha[2], linha[3]))
-        except:
-            self.professores_pegos = None
-            return False
-
-        con.fechar()
-        self.professores_pegos = profs
-        return True
-
-    def pegar_professores_por_usuario(self, usuarios):
-        sql = self._pegar_sql_por_usuario(usuarios)
-        professorespegos = con.consultar(sql)
-        profs = []
-        try:
-            for linha in professorespegos:
-                profs.append(Professor(linha[0], linha[1], linha[2], linha[3]))
-        except:
-            self.professores_pegos = None
-            return False
-
-        con.fechar()
-        self.professores_pegos = profs
-        return True
-
-    def pegar_diarios_por_data(self, datas):
-        sql = self._pegar_sql_por_data(datas)
-        diariospegos = con.consultar(sql)
-        diars = []
-        try:
-            for linha in diariospegos:
-                diars.append(Diario(linha[0], linha[1], linha[2], linha[3], linha[4]))
-        except:
-            self.diarios_pegos = None
-            return False
-
-        con.fechar()
-        self.diarios_pegos = diars
-        return True
-
-    def pegar_diarios_por_situacao(self, situacoes):
-        sql = self._pegar_sql_por_situacao(situacoes)
-        diariospegos = con.consultar(sql)
-        diars = []
-        try:
-            for linha in diariospegos:
-                diars.append(Diario(linha[0], linha[1], linha[2], linha[3], linha[4]))
-        except:
-            self.diarios_pegos = None
-            return False
-
-        con.fechar()
-        self.diarios_pegos = diars
-        return True
-
-    def pegar_diarios_por_data_e_situacao(self, datas, situacoes):
-        sql_data = self._pegar_sql_por_data(datas)
-        sql_situacao = " AND " + " OR ".join([f"p.situacao = '{Diario.situacoes[sit]}'"
-                                              for sit in situacoes])
-        sql = sql_data + sql_situacao
-        diariospegos = con.consultar(sql)
-        diars = []
-        try:
-            for linha in diariospegos:
-                diars.append(Diario(linha[0], linha[1], linha[2], linha[3], linha[4]))
-        except:
-            self.diarios_pegos = None
-            return False
-
-        con.fechar()
-        self.diarios_pegos = diars
-        return True
-
-    def pegar_todos_diarios(self):
-        sql = f"select p.* from {Conexao.tabela_diarios}"
-        diariospegos = con.consultar(sql)
-        diars = []
-        try:
-            for linha in diariospegos:
-                diars.append(Diario(linha[0], linha[1], linha[2], linha[3], linha[4]))
-        except:
-            self.diarios_pegos = None
-            return False
-
-        con.fechar()
-        self.diarios_pegos = diars
-        return True
-
-    def inserir_diarios(self):
-        try:
-            for diario in self.diarios_pegos:
-                sql = f"insert into {Conexao.tabela_diarios}" \
-                      f"(titulo, texto, data, usuario, situacao) " \
-                      f"values {diario}"
-                con.manipular(sql)
                 con.fechar()
-            return True
-        except:
-            return False
+                return profs
+            else:
+                return False
 
-    def inserir_professores(self):
-        try:
-            for professor in self.professores_pegos:
-                sql = f"insert into {Conexao.tabela_professores}" \
-                      f"(nome, adm, usuario, senha) " \
-                      f"values {professor}"
-                con.manipular(sql)
+        elif self.tipo == self.tipos[self.professores_usuario]:
+            if self.dados:
+                sql = self._pegar_sql_por_usuario()
+                professorespegos = con.consultar(sql)
+                profs = []
+                try:
+                    for linha in professorespegos:
+                        profs.append(Professor(linha[0], linha[1], linha[2], linha[3]))
+                except:
+                    return False
+
                 con.fechar()
-            return True
-        except:
-            return False
+                return profs
+            else:
+                return False
+
+        elif self.tipo == self.tipos[self.diarios_usuario]:
+            if self.dados:
+                sql = self._pegar_sql_diario_por_usuario()
+                diariospegos = con.consultar(sql)
+                diars = []
+                try:
+                    for linha in diariospegos:
+                        diars.append(Diario(linha[0], linha[1], linha[2], linha[3], linha[4]))
+                except:
+                    return False
+
+                con.fechar()
+                return diariospegos
+            else:
+                return False
+
+        elif self.tipo == self.tipos[self.diarios_data]:
+            if self.dados:
+                sql = self._pegar_sql_por_data()
+                diariospegos = con.consultar(sql)
+                diars = []
+                try:
+                    for linha in diariospegos:
+                        diars.append(Diario(linha[0], linha[1], linha[2], linha[3], linha[4]))
+                except:
+                    return False
+
+                con.fechar()
+                return diariospegos
+            else:
+                return False
+
+        elif self.tipo == self.tipos[self.diarios_situacao]:
+            if self.dados:
+                sql = self._pegar_sql_por_situacao()
+                diariospegos = con.consultar(sql)
+                diars = []
+                try:
+                    for linha in diariospegos:
+                        diars.append(Diario(linha[0], linha[1], linha[2], linha[3], linha[4]))
+                except:
+                    return False
+
+                con.fechar()
+                return diars
+            else:
+                return False
+
+        elif self.tipo == self.tipos[self.diarios_data_e_situacao]:
+            if self.dados and self.dados_em_lista:
+                sql_data = self._pegar_sql_por_data()
+                sql_situacao = " AND " + " OR ".join([f"p.situacao = '{Diario.situacoes[sit]}'"
+                                                      for sit in self.dados_em_lista])
+                sql = sql_data + sql_situacao
+                diariospegos = con.consultar(sql)
+                diars = []
+                try:
+                    for linha in diariospegos:
+                        diars.append(Diario(linha[0], linha[1], linha[2], linha[3], linha[4]))
+                except:
+                    return False
+
+                con.fechar()
+                return diars
+            else:
+                return False
+
+        elif self.tipo == self.tipos[self.diarios_todos]:
+            sql = f"select p.* from {Conexao.tabela_diarios}"
+            diariospegos = con.consultar(sql)
+            diars = []
+            try:
+                for linha in diariospegos:
+                    diars.append(Diario(linha[0], linha[1], linha[2], linha[3], linha[4]))
+            except:
+                return diars
+
+            con.fechar()
+            return diars
+
+        elif self.tipo == self.tipos[self.inserir_diarios]:
+            if self.dados_em_lista:
+                try:
+                    for diario in self.dados_em_lista:
+                        sql = f"insert into {Conexao.tabela_diarios}" \
+                              f"(titulo, texto, data, usuario, situacao) " \
+                              f"values {diario}"
+                        con.manipular(sql)
+                        con.fechar()
+                    return True
+                except:
+                    return False
+            else:
+                return False
+
+        elif self.tipo == self.tipos[self.inserir_professores]:
+            if self.dados_em_lista:
+                try:
+                    for professor in self.dados_em_lista:
+                        sql = f"insert into {Conexao.tabela_professores}" \
+                              f"(nome, adm, usuario, senha) " \
+                              f"values {professor}"
+                        con.manipular(sql)
+                        con.fechar()
+                    return True
+                except:
+                    return False
+            else:
+                return False
 
 
 if __name__ == "__main__":

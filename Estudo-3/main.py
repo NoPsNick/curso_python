@@ -11,9 +11,8 @@ class Pessoa:
         self.senha = senha
 
     def enviar_msg(self, ident, titulo, mensagem, destinatario):
-        remetente = self
 
-        return Mensagem(ident, titulo, mensagem, remetente, destinatario)
+        return Mensagem(id=ident, titulo=titulo, mensagem=mensagem, remetente=self, destinatario=destinatario)
 
     def pegar_msg(self, msgs):
         lista = []
@@ -32,14 +31,14 @@ class Mensagem:
         self.remetente = remetente
         self.destinatario = destinatario
 
-    def formatar(self):
+    def get(self):
         identificador = self.id
         titulo = self.titulo
         mensagem = self.mensagem
         remetente = self.remetente
         return f"[{identificador}] {titulo}:\n" \
                f"{mensagem}\n" \
-               f"Enviado por: {remetente.usuario}."
+               f"Enviado por: {remetente.nome}."
 
 
 pessoa1 = Pessoa(randint(1, 100), "email1", "francisco", "xico", "abc123")
@@ -50,6 +49,6 @@ mensagem_da_pessoa2 = pessoa2.enviar_msg(randint(1, 100), "Titulo2", "mensagem2"
 mensagem_da_pessoa1_2 = pessoa1.enviar_msg(randint(1, 100), "Titulo3", "mensagem3", pessoa2)
 mensagem_da_pessoa2_2 = pessoa2.enviar_msg(randint(1, 100), "Titulo4", "mensagem4", pessoa1)
 
-pegar = pessoa2.pegar_msg([mensagem_da_pessoa1, mensagem_da_pessoa2, mensagem_da_pessoa1_2, mensagem_da_pessoa2_2])
+pegar = pessoa1.pegar_msg([mensagem_da_pessoa1, mensagem_da_pessoa2, mensagem_da_pessoa1_2, mensagem_da_pessoa2_2])
 for msg in pegar:
-    print(msg.formatar())
+    print(msg.get())
